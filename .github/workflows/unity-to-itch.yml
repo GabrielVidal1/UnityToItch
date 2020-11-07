@@ -7,18 +7,19 @@ on:
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
+  UNITY_VERSION: 2019.4.12f1
+  PROJECT_PATH: TestProject
+  ITCH_GAME: test
+  ITCH_USER: gabrielvidal
 
 jobs:
-  buildForSomePlatforms:
-    name: Build for ${{ matrix.targetPlatform }} on version ${{ matrix.unityVersion }}
+  build:
+    name: Build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        projectPath:
-          - TestProject
-        unityVersion:
-          - 2019.4.12f1
         targetPlatform:
           - StandaloneWindows64 # Build a Windows 64-bit standalone.
 #          - StandaloneWindows # Build a Windows standalone.
@@ -31,24 +32,24 @@ jobs:
           lfs: true
       - uses: actions/cache@v1.1.0
         with:
-          path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
+          path: ${{ env.PROJECT_PATH }}/Library
+          key: Library-${{ env.PROJECT_PATH }}-${{ matrix.targetPlatform }}
           restore-keys: |
-            Library-${{ matrix.projectPath }}-
+            Library-${{ env.PROJECT_PATH }}-
             Library-
       - uses: webbertakken/unity-builder@v2.0-alpha-1
         with:
-          projectPath: ${{ matrix.projectPath }}
-          unityVersion: ${{ matrix.unityVersion }}
+          projectPath: ${{ env.PROJECT_PATH }}
+          unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ matrix.targetPlatform }}
-#      - uses: actions/upload-artifact@v1
-#        with:
-#          name: Build
-#          path: build
-      - uses: josephbmanley/butler-publish-itchio-action@master
-        env:
-          BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
-          CHANNEL: windows
-          ITCH_GAME: test
-          ITCH_USER: gabrielvidal
-          PACKAGE: build
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Build
+          path: build
+#      - uses: josephbmanley/butler-publish-itchio-action@master
+#        env:
+#          BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
+#          CHANNEL: windows
+#          ITCH_GAME: ${{ env.ITCH_GAME }}
+#          ITCH_USER: ${{ env.ITCH_USER }}
+#          PACKAGE: build
